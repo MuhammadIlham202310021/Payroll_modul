@@ -1,0 +1,28 @@
+{% extends 'pekerja/base.html' %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h4 class="mb-3">{{ judul }}</h4>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+                {% for field in form %}
+                <div class="col-md-6 mb-3">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <a href="{% url kembali %}" class="btn btn-secondary">Batal</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

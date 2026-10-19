@@ -1,0 +1,12 @@
+{% extends 'pekerja/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h4>Selamat Datang, {{ user.username }}</h4>
+        <p class="text-muted mb-0">Silahkan pilih menu disebelah kiri untuk memulai</p>
+    </div>
+</div> 
+{% endblock %}

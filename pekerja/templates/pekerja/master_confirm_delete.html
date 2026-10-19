@@ -1,0 +1,16 @@
+{% extends 'pekerja/base.html' %}
+
+{% block content %}
+<div class="card shadow-sm border-danger">
+    <div class="card-body">
+        <h4 class="text-danger">{{ judul }}</h4>
+        <p>Yakin ingin menghapus <strong>{{ obj }}</strong>? Data yang dihapus tidak bisa dikembalikan.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+            <a href="{% url kembali %}" class="btn btn-secondary">Batal</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

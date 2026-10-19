@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Data Pekerja{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --sidebar-width: 250px; }
+
+        #sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: #212529; color: #fff;
+            overflow-y: auto; z-index: 1040;
+            transition: margin-left .25s;
+        }
+        #sidebar .brand { padding: 14px 18px; font-weight: bold; border-bottom: 1px solid #343a40; }
+        #sidebar .user { padding: 8px 18px; border-bottom: 1px
+        solid #343a40;
+        }
+        #sidebar .nav-link { color: #c8ccd0; padding: 10px 18px; }
+        #sidebar .nav-link:hover { background: #2c3237; color: #fff; }
+        #sidebar .nav-link.active { background: #0d6efd; color: #fff; }
+        #sidebar .nav { flex-wrap: nowrap; }
+        #sidebar .submenu .nav-link { padding-left: 38px; font-size: 14px; }
+        #sidebar .submenu .submenu .nav-link { padding-left: 58px; }
+
+        #main { margin-left: var(--sidebar-width); transition: margin-left .25s; }
+        body.sidebar-closed #sidebar { margin-left: calc(var(--sidebar-width) * -1); }
+        body.sidebar-closed #main { margin-left: 0; }
+
+        @media (max-width: 767px) {
+            #main { margin-left: 0; }
+            #sidebar { margin-left: calc(var(--sidebar-width) * -1); }
+            body.sidebar-open #sidebar { margin-left: 0; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="brand">Sistem Data Pekerja</div>
+        <div class="user"><p>User: {{ user.username }}</p></div>
+        {% comment %} menyimpan nama URL ke variabel n agar kondisi tidak panjang berulang. {% endcomment %}
+        {% with n=request.resolver_match.url_name %}
+        <ul class="nav flex-column">
+
+            {% comment %} HOME {% endcomment %}
+            <li class="nav-item">
+                <a class="nav-link {% if n == 'home' %}active{% endif %}"
+                   href="{% url 'pekerja:home' %}">Home</a>
+            </li>
+
+            {% comment %} PAYROLL {% endcomment %}
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#menuPayroll" role="button">Payroll &#9662;</a>
+                <ul class="nav flex-column submenu collapse {% if n == 'list' or n == 'create' or n == 'update' or n == 'delete' or 'department' in n or 'division' in n %}show{% endif %}" id="menuPayroll">
+
+                    {% comment %} BIOADATA {% endcomment %}
+                    {% if perms.pekerja.view_pekerja %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if n == 'list' %}active{% endif %}"
+                           href="{% url 'pekerja:list' %}">Biodata</a>
+                    </li>
+                    {% endif %}
+
+                    {% comment %} DEPARTMENT {% endcomment %}
+                    {% if perms.pekerja.view_department %}
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#menuDepartment" role="button">Department &#9662;</a>
+                        <ul class="nav flex-column submenu collapse {% if 'department' in n or 'division' in n %}show{% endif %}" id="menuDepartment">
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'department' in n %}active{% endif %}"
+                                   href="{% url 'pekerja:department_list' %}">Department</a>
+                            </li>
+                            {% if perms.pekerja.view_division %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'division' in n %}active{% endif %}"
+                                   href="{% url 'pekerja:division_list' %}">Division</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+            </li>
+
+            {% comment %} Report {% endcomment %}
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#menuReport" role="button">Report &#9662;</a>
+                <ul class="nav flex-column submenu collapse {% if n == 'report' %}show{% endif %}" id="menuReport">
+
+                    {% if perms.pekerja.export_pekerja %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if n == 'report' %}active{% endif %}"
+                           href="{% url 'pekerja:report' %}">Report Biodata</a>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if n == 'kebun' %}active{% endif %}"
+                   href="{% url 'pekerja:kebun' %}">Kebun</a>
+            </li>
+
+        </ul>
+        {% endwith %}
+    </aside>
+
+    <!-- KONTEN UTAMA -->
+    <div id="main">
+        <nav class="navbar navbar-dark bg-primary px-3">
+            <button id="toggleSidebar" class="btn btn-outline-light btn-sm" type="button">&#9776;</button>
+            <div class="d-flex align-items-center ms-auto">
+                <span class="text-white me-3">{{ user.username }}</span>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                </form>
+            </div>
+        </nav>
+
+        <div class="container-fluid my-4 px-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {% endfor %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            if (window.innerWidth < 768) {
+                document.body.classList.toggle('sidebar-open');
+            } else {
+                document.body.classList.toggle('sidebar-closed');
+            }
+        });
+    </script>
+</body>
+</html>

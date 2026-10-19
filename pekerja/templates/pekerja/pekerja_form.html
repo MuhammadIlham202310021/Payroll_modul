@@ -1,0 +1,52 @@
+{% extends 'pekerja/base.html' %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h4 class="mb-3">{{ judul }}</h4>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+                {% for field in form %}
+                <div class="col-md-6 mb-3">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <a href="{% url 'pekerja:list' %}" class="btn btn-secondary">Batal</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const dept = document.getElementById('id_department');
+        const div = document.getElementById('id_division');
+        const url = "{% url 'pekerja:division_by_department' %}";
+
+        dept.addEventListener('change', function () {
+            div.innerHTML = '<option value="">-- Pilih Division --</option>';
+            if (!this.value) return;
+
+            fetch(url + '?department=' + this.value)
+                .then(function (r) { return r.json(); })
+                .then(function (items) {
+                    items.forEach(function (it) {
+                        const opt = document.createElement('option');
+                        opt.value = it.id;
+                        opt.textContent = it.division_code + ' - ' + it.division_name;
+                        div.appendChild(opt);
+                    });
+                });
+        });
+    })();
+</script>
+{% endblock %}
