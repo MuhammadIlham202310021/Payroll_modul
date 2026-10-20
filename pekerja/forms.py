@@ -1,5 +1,5 @@
 from django import forms 
-from .models import Pekerja, Department, Division
+from .models import Pekerja, Department, Division, Jabatan
 
 class PekerjaForm(forms.ModelForm):
     department = forms.ModelChoiceField(
@@ -130,3 +130,13 @@ class ReportFilterForm(forms.Form):
                 self.add_error('division', 'Division tidak sesuai dengan Department yang dipilih.')
 
         return cleaned    
+    
+class JabatanForm(forms.ModelForm):
+    class Meta:
+        model = Jabatan
+        fields = ['jabatan_code', 'jabatan_name']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'

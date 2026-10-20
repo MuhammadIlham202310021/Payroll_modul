@@ -26,5 +26,11 @@ urlpatterns = [
     
     path('report/', views.report_biodata, name='report'),
     path('report/excel/', views.report_excel, name='report_excel'),
-    path('report/pdf/', views.report_pdf, name='report_pdf')
+    path('report/pdf/', views.report_pdf, name='report_pdf'),
+    
+    path('jabatan/', views.jabatan_list, name='jabatan_list'),
+    path('jabatan/tambah/', views.jabatan_create, name='jabatan_create'),
+    path('jabatan/<int:pk>/edit/', views.jabatan_update, name='jabatan_update'),
+    path('jabatan/<int:pk>/hapus/', views.jabatan_delete, name='jabatan_delete'),
+    
 ]

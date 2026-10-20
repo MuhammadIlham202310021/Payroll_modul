@@ -9,8 +9,8 @@ from .report_excel import build_workbook
 from .report_pdf import build_pdf
 
 
-from .forms import PekerjaForm, DepartmentForm, DivisionForm, ReportFilterForm
-from .models import Pekerja, Department, Division
+from .forms import PekerjaForm, DepartmentForm, DivisionForm, ReportFilterForm, JabatanForm
+from .models import Pekerja, Department, Division, Jabatan
 from .report_utils import filter_pekerja, filter_label, build_summary
 
 @login_required
@@ -27,8 +27,11 @@ def kebun(request):
 def pekerja_list(request):
     # request.GET.get('q') mengambil kata kunci dari URL, misalnya /?q=budi.
     q = request.GET.get('q', '').strip()
+    dept_id = request.GET.get('department', '')
+    div_id = request.GET.get('division', '')
     
     pekerja = Pekerja.objects.select_related('division__department')
+    
     if q:
         # Q(...) | Q(...) berarti ATAU: data cocok jika salah satu kolom mengandung kata kunci. icontains tidak membedakan huruf besar dan kecil.
         pekerja = pekerja.filter(
@@ -39,15 +42,38 @@ def pekerja_list(request):
             Q(division__department__department_name__icontains=q)
         )
     
-    # Paginator(pekerja, 10) membagi data menjadi halaman berisi 10 baris.
+    selected_dept = None
+    selected_div = None
+    divisions = Division.objects.none()
+    
+    if dept_id.isdigit():
+        selected_dept = Department.objects.filter(pk=dept_id).first()
+        
+    if selected_dept:
+        pekerja = pekerja.filter(division__department=selected_dept)
+        divisions = Division.objects.filter(department=selected_dept)
+        # memastikan nilainya angka sebelum dipakai untuk query, sehingga isi URL yang ngawur diabaikan, bukan menyebabkan error.
+        if div_id.isdigit():
+            selected_div = divisions.filter(pk=div_id).first()
+            if selected_div:
+                pekerja = pekerja.filter(division=selected_div)
+    
     paginator = Paginator(pekerja, 10)
-    # get_page(...) mengambil halaman sesuai ?page=2 di URL.
     page_obj = paginator.get_page(request.GET.get('page'))
+    
+    params = request.GET.copy()
+    params.pop('page', None)
     
     # Template menerima page_obj (data satu halaman),
     return render (request, 'pekerja/pekerja_list.html', {
         'page_obj': page_obj,
         'q': q,
+        'departments': Department.objects.all(),
+        'divisions': divisions,
+        'selected_dept': selected_dept,
+        'selected_div': selected_div,
+        'has_filter': bool(q or selected_dept),
+        'query_string':  params.urlencode(),
     })
 
 # Create Pekerja
@@ -281,3 +307,58 @@ def report_pdf(request):
     response['Content-Disposition'] = f'attachment; filename="report_biodata_{stamp}.pdf"'
     build_pdf(response, qs, summary, label, request.user.username)
     return response
+
+# === Jabatan ===
+@login_required
+@permission_required('pekerja.view_jabatan', raise_exception=True)
+def jabatan_list(request):
+    return render(request, 'pekerja/jabatan_list.html', {
+        'items': Jabatan.objects.all(),
+    })
+    
+@login_required
+@permission_required('pekerja.add_jabatan', raise_exception=True)
+def jabatan_create(request):
+    if request.method == 'POST':
+        form = JabatanForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Jabatan berhasil ditambahkan.')
+            return redirect('pekerja:jabatan_list')
+    else:
+        form = JabatanForm()
+    return render(request, 'pekerja/master_form.html', {
+        'form': form, 'judul': 'Tambah Jabatan', 'kembali': 'pekerja:jabatan_list',
+    })
+
+@login_required
+@permission_required('pekerja.change_jabatan', raise_exception=True)
+def jabatan_update(request, pk):
+    obj = get_object_or_404(Jabatan, pk=pk)
+    if request.method == 'POST':
+        form = JabatanForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Jabatan bersahil diperbarui')
+            return redirect('pekerja:jabatan_list')
+    else:
+        form = JabatanForm(instance=obj)
+    return render(request, 'pekerja/master_form.html', {
+        'form': form, 'judul': 'Edit Jabatan', 'kembali': 'pekerja:jabatan_list',
+        })
+
+@login_required
+@permission_required('pekerja.delete_jabatan', raise_exception=True)
+def jabatan_delete(request, pk):
+    obj = get_object_or_404(Jabatan, pk=pk)
+    if request.method == 'POST':
+        try:
+            obj.delete()
+            messages.success(request, 'Jabatan berhasil dihapus')
+        except ProtectedError:
+            messages.error(request, 'Jabatan tidak bisa dihapus karena masih dipakai Pekerja')
+        return redirect('pekerja:jabatan_list')
+    return render(request, 'pekerja/master_confirm_delete.html', {
+        'obj': obj, 'judul': 'Hapus Jabatan', 'kembali': 'pekerja:jabatan_list',
+    })
+            

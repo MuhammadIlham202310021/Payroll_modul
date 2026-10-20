@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 # Create your models here.
 
@@ -70,3 +71,18 @@ class Division(models.Model):
         
     def __str__(self):
         return f'{self.division_code} - {self.division_name}'
+    
+class Jabatan(models.Model):
+    jabatan_code = models.CharField('Jabatan Code', max_length=10, unique=True)
+    jabatan_name = models.CharField('jabatan_name', max_length=100)
+    
+    class Meta:
+        ordering = ['jabatan_code']
+        verbose_name = "Jabatan"
+        # mencegah Django menulis “Jabatans” di /admin/, karena kata Indonesia tidak diberi akhiran s.
+        verbose_name_plural = 'Jabatan'
+        
+    def __str__(self):
+        return f'{self.jabatan_code} - {self.jabatan_name}'
+
+

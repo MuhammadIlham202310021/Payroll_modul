@@ -1,0 +1,48 @@
+{% extends 'pekerja/base.html' %}
+
+{% block title %}Jabatan{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Daftar Jabatan</h4>
+            {% if perms.pekerja.add_jabatan %}
+                <a href="{% url 'pekerja:jabatan_create' %}" class="btn btn-primary">+ Tambah Jabatan</a>
+            {% endif %}
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>No</th>
+                        <th>Jabatan Code</th>
+                        <th>Jabatan Name</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for j in items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ j.jabatan_code }}</td>
+                        <td>{{ j.jabatan_name }}</td>
+                        <td class="text-nowrap">
+                            {% if perms.pekerja.change_jabatan %}
+                                <a href="{% url 'pekerja:jabatan_update' j.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                            {% endif %}
+                            {% if perms.pekerja.delete_jabatan %}
+                                <a href="{% url 'pekerja:jabatan_delete' j.pk %}" class="btn btn-danger btn-sm">Hapus</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted">Belum ada data jabatan.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

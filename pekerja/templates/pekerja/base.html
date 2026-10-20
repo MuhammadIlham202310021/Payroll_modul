@@ -56,7 +56,7 @@
             {% comment %} PAYROLL {% endcomment %}
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#menuPayroll" role="button">Payroll &#9662;</a>
-                <ul class="nav flex-column submenu collapse {% if n == 'list' or n == 'create' or n == 'update' or n == 'delete' or 'department' in n or 'division' in n %}show{% endif %}" id="menuPayroll">
+                <ul class="nav flex-column submenu collapse {% if n == 'list' or n == 'create' or n == 'update' or n == 'delete' or 'department' in n or 'division' in n or 'jabatan' in n %}show{% endif %}" id="menuPayroll">
 
                     {% comment %} BIOADATA {% endcomment %}
                     {% if perms.pekerja.view_pekerja %}
@@ -84,8 +84,17 @@
                         </ul>
                     </li>
                     {% endif %}
+
+                    {% comment %} Jabatan {% endcomment %}
+                    {% if perms.pekerja.view_jabatan %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'jabatan' in n %}active{% endif %}"
+                           href="{% url 'pekerja:jabatan_list' %}">Jabatan</a>
+                    </li>
+                    {% endif %}
                 </ul>
             </li>
+            {% comment %} END PAYROLL {% endcomment %}
 
             {% comment %} Report {% endcomment %}
             <li class="nav-item">

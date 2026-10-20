@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib import admin
-from .models import Pekerja, Department, Division
+from .models import Pekerja, Department, Division, Jabatan
 
 @admin.register(Pekerja)
 class PekerjaAdmin(admin.ModelAdmin):
@@ -13,4 +13,5 @@ class PekerjaAdmin(admin.ModelAdmin):
 # Department dan Division ikut didaftarkan sebagai cadangan pengelolaan lewat /admin/.
 admin.site.register(Department)
 admin.site.register(Division)
+admin.site.register(Jabatan)
     
